@@ -225,7 +225,7 @@ crontab -r
 
 1. **Run during off-hours**: The import is network and database intensive
 2. **Monitor disk space**: Ensure you have at least 30GB free
-3. **Check Neon limits**: Monitor your Neon database usage during import
+3. **Check database size**: Monitor your PostgreSQL database usage during import
 4. **Resume if interrupted**: Use `--skip-existing` to safely resume
 
 ## Next Steps

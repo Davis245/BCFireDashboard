@@ -74,11 +74,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# Support both DATABASE_URL (for Neon/production) and individual settings (for local development)
+# Support both DATABASE_URL (for production) and individual settings (for local development)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 
 if DATABASE_URL:
-    # Use Neon or other database URL
+    # Use database URL from environment
     DATABASES = {
         'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)
     }
