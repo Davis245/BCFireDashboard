@@ -125,7 +125,7 @@ class WeatherStationViewSet(viewsets.ReadOnlyModelViewSet):
         )
         
         # Add station info and date range
-        stats['station_id'] = station.station_id
+        stats['station_code'] = station.station_code
         stats['station_name'] = station.name
         stats['start_date'] = start_date
         stats['end_date'] = end_date
@@ -165,10 +165,10 @@ class HourlyObservationViewSet(viewsets.ReadOnlyModelViewSet):
         if station:
             queryset = queryset.filter(station_id=station)
         
-        # Filter by station_id (ECCC ID)
-        station_id = self.request.query_params.get('station_id')
-        if station_id:
-            queryset = queryset.filter(station__station_id=station_id)
+        # Filter by station_code (BCWS station code)
+        station_code = self.request.query_params.get('station_code')
+        if station_code:
+            queryset = queryset.filter(station__station_code=station_code)
         
         # Date range filtering
         start_date = self.request.query_params.get('start_date')
@@ -231,7 +231,7 @@ class HourlyObservationViewSet(viewsets.ReadOnlyModelViewSet):
     def latest(self, request):
         """
         Get the single most recent observation for each station.
-        Returns a map of station_id -> observation.
+        Returns a map of station_code -> observation.
         """
         latest_observations = {}
         
@@ -243,6 +243,6 @@ class HourlyObservationViewSet(viewsets.ReadOnlyModelViewSet):
         for station in stations:
             latest = station.observations.first()
             if latest:
-                latest_observations[station.station_id] = HourlyObservationSerializer(latest).data
+                latest_observations[station.station_code] = HourlyObservationSerializer(latest).data
         
         return Response(latest_observations)

@@ -15,7 +15,7 @@ class WeatherStationSerializer(serializers.ModelSerializer):
         model = WeatherStation
         fields = [
             'id',
-            'station_id',
+            'station_code',
             'name',
             'province',
             'latitude',
@@ -44,7 +44,7 @@ class WeatherStationListSerializer(serializers.ModelSerializer):
         model = WeatherStation
         fields = [
             'id',
-            'station_id',
+            'station_code',
             'name',
             'province',
             'latitude',
@@ -58,27 +58,34 @@ class HourlyObservationSerializer(serializers.ModelSerializer):
     """Serializer for HourlyObservation model."""
     
     station_name = serializers.CharField(source='station.name', read_only=True)
-    station_id = serializers.CharField(source='station.station_id', read_only=True)
+    station_code = serializers.CharField(source='station.station_code', read_only=True)
     
     class Meta:
         model = HourlyObservation
         fields = [
             'id',
             'station',
-            'station_id',
+            'station_code',
             'station_name',
             'observation_time',
             'temperature',
-            'dew_point',
             'relative_humidity',
             'precipitation',
             'wind_direction',
             'wind_speed',
-            'visibility',
-            'station_pressure',
-            'humidex',
-            'wind_chill',
-            'weather_description',
+            'wind_gust',
+            'hourly_ffmc',
+            'hourly_isi',
+            'hourly_fwi',
+            'ffmc',
+            'dmc',
+            'dc',
+            'isi',
+            'bui',
+            'fwi',
+            'danger_rating',
+            'snow_depth',
+            'solar_radiation',
         ]
 
 
@@ -91,16 +98,11 @@ class HourlyObservationListSerializer(serializers.ModelSerializer):
             'id',
             'observation_time',
             'temperature',
-            'dew_point',
             'relative_humidity',
             'precipitation',
             'wind_direction',
             'wind_speed',
-            'visibility',
-            'station_pressure',
-            'humidex',
-            'wind_chill',
-            'weather_description',
+            'wind_gust',
         ]
 
 
@@ -113,7 +115,7 @@ class StationWithObservationsSerializer(serializers.ModelSerializer):
         model = WeatherStation
         fields = [
             'id',
-            'station_id',
+            'station_code',
             'name',
             'province',
             'latitude',
@@ -133,7 +135,7 @@ class StationWithObservationsSerializer(serializers.ModelSerializer):
 class WeatherStatisticsSerializer(serializers.Serializer):
     """Serializer for weather statistics."""
     
-    station_id = serializers.CharField()
+    station_code = serializers.CharField()
     station_name = serializers.CharField()
     start_date = serializers.DateTimeField()
     end_date = serializers.DateTimeField()

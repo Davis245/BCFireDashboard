@@ -61,11 +61,16 @@ export const WeatherMap = ({
     stations.forEach((station) => {
       if (!station.latitude || !station.longitude) return;
 
-      const observation = latestObservations[station.id];
-      const temp = observation?.temperature;
+      const lat = parseFloat(station.latitude);
+      const lon = parseFloat(station.longitude);
+      
+      if (isNaN(lat) || isNaN(lon)) return;
+
+      const observation = latestObservations[station.station_code];
+      const temp = observation?.temperature ? parseFloat(observation.temperature) : null;
       const color = getTemperatureColor(temp);
 
-      const marker = L.circleMarker([station.latitude, station.longitude], {
+      const marker = L.circleMarker([lat, lon], {
         radius: selectedStation?.id === station.id ? 10 : 6,
         fillColor: color,
         color: '#fff',
@@ -81,9 +86,9 @@ export const WeatherMap = ({
           ${
             observation
               ? `
-            <p>Temperature: ${observation.temperature?.toFixed(1) || 'N/A'}°C</p>
-            <p>Humidity: ${observation.rel_humidity?.toFixed(0) || 'N/A'}%</p>
-            <p>Wind: ${observation.wind_speed?.toFixed(1) || 'N/A'} km/h</p>
+            <p>Temperature: ${observation.temperature ? parseFloat(observation.temperature).toFixed(1) : 'N/A'}°C</p>
+            <p>Humidity: ${observation.relative_humidity || 'N/A'}%</p>
+            <p>Wind: ${observation.wind_speed ? parseFloat(observation.wind_speed).toFixed(1) : 'N/A'} km/h</p>
           `
               : '<p>No recent data</p>'
           }

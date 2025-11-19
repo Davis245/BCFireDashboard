@@ -4,13 +4,13 @@ from django.utils import timezone
 
 class WeatherStation(models.Model):
     """
-    Represents an ECCC climate station in BC.
+    Represents a BC Wildfire Service fire weather station.
     """
-    station_id = models.CharField(
+    station_code = models.CharField(
         max_length=10,
         unique=True,
         db_index=True,
-        help_text="ECCC Climate ID (7 digits)"
+        help_text="BCWS Station Code"
     )
     name = models.CharField(max_length=200)
     province = models.CharField(max_length=2, default='BC')
@@ -39,16 +39,16 @@ class WeatherStation(models.Model):
     
     class Meta:
         ordering = ['name']
-        verbose_name = "Weather Station"
-        verbose_name_plural = "Weather Stations"
+        verbose_name = "Fire Weather Station"
+        verbose_name_plural = "Fire Weather Stations"
     
     def __str__(self):
-        return f"{self.name} ({self.station_id})"
+        return f"{self.name} ({self.station_code})"
 
 
 class HourlyObservation(models.Model):
     """
-    Stores hourly weather observations from ECCC climate stations.
+    Stores hourly fire weather observations from BC Wildfire Service.
     """
     station = models.ForeignKey(
         WeatherStation,
@@ -57,10 +57,10 @@ class HourlyObservation(models.Model):
     )
     observation_time = models.DateTimeField(
         db_index=True,
-        help_text="Observation time in UTC"
+        help_text="Observation time"
     )
     
-    # Temperature measurements
+    # Basic weather measurements
     temperature = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -68,20 +68,11 @@ class HourlyObservation(models.Model):
         blank=True,
         help_text="Temperature in °C"
     )
-    dew_point = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Dew point temperature in °C"
-    )
     relative_humidity = models.IntegerField(
         null=True,
         blank=True,
         help_text="Relative humidity in %"
     )
-    
-    # Precipitation
     precipitation = models.DecimalField(
         max_digits=6,
         decimal_places=2,
@@ -91,11 +82,6 @@ class HourlyObservation(models.Model):
     )
     
     # Wind measurements
-    wind_direction = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Wind direction in tens of degrees (0-36)"
-    )
     wind_speed = models.DecimalField(
         max_digits=5,
         decimal_places=2,
@@ -103,52 +89,108 @@ class HourlyObservation(models.Model):
         blank=True,
         help_text="Wind speed in km/h"
     )
+    wind_direction = models.IntegerField(
+        null=True,
+        blank=True,
+        help_text="Wind direction in degrees"
+    )
+    wind_gust = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Wind gust in km/h"
+    )
     
-    # Other atmospheric measurements
-    visibility = models.DecimalField(
+    # Hourly Fire Weather Indices
+    hourly_ffmc = models.DecimalField(
         max_digits=6,
-        decimal_places=2,
+        decimal_places=3,
         null=True,
         blank=True,
-        help_text="Visibility in km"
+        help_text="Hourly Fine Fuel Moisture Code"
     )
-    station_pressure = models.DecimalField(
-        max_digits=7,
-        decimal_places=2,
+    hourly_isi = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
         null=True,
         blank=True,
-        help_text="Station pressure in kPa"
+        help_text="Hourly Initial Spread Index"
     )
-    
-    # Calculated indices
-    humidex = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
+    hourly_fwi = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
         null=True,
         blank=True,
-        help_text="Humidex index"
-    )
-    wind_chill = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Wind chill index"
+        help_text="Hourly Fire Weather Index"
     )
     
-    # Weather description
-    weather_description = models.TextField(
+    # Daily Fire Weather Indices
+    ffmc = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
         null=True,
         blank=True,
-        help_text="Weather conditions description"
+        help_text="Fine Fuel Moisture Code"
+    )
+    dmc = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Duff Moisture Code"
+    )
+    dc = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Drought Code"
+    )
+    isi = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Initial Spread Index"
+    )
+    bui = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Buildup Index"
+    )
+    fwi = models.DecimalField(
+        max_digits=6,
+        decimal_places=3,
+        null=True,
+        blank=True,
+        help_text="Fire Weather Index"
     )
     
-    # Data quality tracking
-    data_quality = models.CharField(
-        max_length=50,
+    # Fire danger rating
+    danger_rating = models.CharField(
+        max_length=20,
         null=True,
         blank=True,
-        help_text="Data quality flags"
+        help_text="Fire danger rating (Low, Moderate, High, Very High, Extreme)"
+    )
+    
+    # Additional measurements
+    snow_depth = models.DecimalField(
+        max_digits=8,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Snow depth in cm"
+    )
+    solar_radiation = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Solar radiation"
     )
     
     created_at = models.DateTimeField(auto_now_add=True)

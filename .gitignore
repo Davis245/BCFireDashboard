@@ -9,9 +9,14 @@
 
 # Backend
 backend/.venv/
+backend/venv/
 backend/*.pyc
 backend/__pycache__/
+backend/**/__pycache__/
+backend/**/*.pyc
 backend/db.sqlite3
+backend/*.log
+backend/logs/
 
 # Frontend
 frontend/node_modules/
@@ -24,3 +29,10 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.bak

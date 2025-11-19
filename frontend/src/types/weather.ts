@@ -1,30 +1,40 @@
 // Type definitions for weather data and stations
 export interface WeatherStation {
   id: number;
-  station_id: string;
+  station_code: string;
   name: string;
   province: string;
-  latitude: number;
-  longitude: number;
-  elevation: number | null;
+  latitude: string | null;
+  longitude: string | null;
+  elevation: string | null;
   is_active: boolean;
+  last_updated?: string | null;
 }
 
 export interface HourlyObservation {
   id: number;
   station: number;
+  station_code?: string;
+  station_name?: string;
   observation_time: string;
-  temperature: number | null;
-  dew_point: number | null;
-  rel_humidity: number | null;
-  wind_direction: string | null;
-  wind_speed: number | null;
-  visibility: number | null;
-  station_pressure: number | null;
-  humidex: number | null;
-  wind_chill: number | null;
-  weather: string | null;
-  precipitation: number | null;
+  temperature: string | null;
+  relative_humidity: number | null;
+  precipitation: string | null;
+  wind_direction: number | null;
+  wind_speed: string | null;
+  wind_gust: string | null;
+  hourly_ffmc: string | null;
+  hourly_isi: string | null;
+  hourly_fwi: string | null;
+  ffmc: string | null;
+  dmc: string | null;
+  dc: string | null;
+  isi: string | null;
+  bui: string | null;
+  fwi: string | null;
+  danger_rating: string | null;
+  snow_depth: string | null;
+  solar_radiation: string | null;
 }
 
 export interface StationWithObservations extends WeatherStation {
@@ -32,12 +42,21 @@ export interface StationWithObservations extends WeatherStation {
 }
 
 export interface WeatherStatistics {
-  avg_temperature: number | null;
-  min_temperature: number | null;
-  max_temperature: number | null;
-  avg_humidity: number | null;
-  total_precipitation: number | null;
-  observation_count: number;
+  station_code: string;
+  station_name: string;
+  start_date: string;
+  end_date: string;
+  avg_temperature: string | null;
+  min_temperature: string | null;
+  max_temperature: string | null;
+  total_precipitation: string | null;
+  avg_precipitation: string | null;
+  avg_humidity: string | null;
+  min_humidity: number | null;
+  max_humidity: number | null;
+  avg_wind_speed: string | null;
+  max_wind_speed: string | null;
+  total_observations: number;
 }
 
 export interface DateRange {
@@ -46,5 +65,5 @@ export interface DateRange {
 }
 
 export interface LatestObservationsMap {
-  [stationId: number]: HourlyObservation;
+  [stationCode: string]: HourlyObservation;
 }

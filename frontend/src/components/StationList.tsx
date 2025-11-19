@@ -72,19 +72,19 @@ export const StationList = ({
                   <div className="data-row">
                     <span className="data-label">Temp:</span>
                     <span className="data-value">
-                      {observation.temperature?.toFixed(1) ?? 'N/A'}°C
+                      {observation.temperature ? parseFloat(observation.temperature).toFixed(1) : 'N/A'}°C
                     </span>
                   </div>
                   <div className="data-row">
                     <span className="data-label">Humidity:</span>
                     <span className="data-value">
-                      {observation.rel_humidity?.toFixed(0) ?? 'N/A'}%
+                      {observation.relative_humidity ?? 'N/A'}%
                     </span>
                   </div>
                   <div className="data-row">
                     <span className="data-label">Wind:</span>
                     <span className="data-value">
-                      {observation.wind_speed?.toFixed(1) ?? 'N/A'} km/h{' '}
+                      {observation.wind_speed ? parseFloat(observation.wind_speed).toFixed(1) : 'N/A'} km/h{' '}
                       {observation.wind_direction || ''}
                     </span>
                   </div>
