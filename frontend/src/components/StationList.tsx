@@ -26,8 +26,8 @@ export const StationList = ({
       if (sortBy === 'name') {
         return a.name.localeCompare(b.name);
       } else {
-        const tempA = latestObservations[a.id]?.temperature ?? -999;
-        const tempB = latestObservations[b.id]?.temperature ?? -999;
+        const tempA = parseFloat(latestObservations[a.id]?.temperature ?? '-999');
+        const tempB = parseFloat(latestObservations[b.id]?.temperature ?? '-999');
         return tempB - tempA;
       }
     });
