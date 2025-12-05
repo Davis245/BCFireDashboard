@@ -1,67 +1,118 @@
 #!/bin/bash
-# Setup script to configure hourly weather data updates via cron
 
-SCRIPT_DIR="/Users/davisfranklin/BCFireWeatherDashboard/backend"
-PYTHON_PATH="$SCRIPT_DIR/.venv/bin/python"
+# BC Fire Weather Dashboard - Cron Job Setup Script
+# This script helps you set up automated daily data updates
+
+set -e
+
+# Colors for output
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo "========================================================================"
+echo "BC Fire Weather Dashboard - Cron Job Setup"
+echo "========================================================================"
+echo ""
+
+# Get the absolute path to the project directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+VENV_PATH="$PROJECT_DIR/.venv"
 MANAGE_PY="$SCRIPT_DIR/manage.py"
-LOG_DIR="$SCRIPT_DIR/logs"
 
-# Create logs directory if it doesn't exist
-mkdir -p "$LOG_DIR"
-
-# Create the cron job command
-CRON_COMMAND="0 * * * * cd $SCRIPT_DIR && $PYTHON_PATH $MANAGE_PY update_weather_data >> $LOG_DIR/update_weather.log 2>&1"
-
-echo "======================================================================"
-echo "BC Fire Weather Dashboard - Hourly Update Setup"
-echo "======================================================================"
-echo ""
-echo "This will set up a cron job to update weather data every hour."
-echo ""
-echo "Cron command that will be added:"
-echo "$CRON_COMMAND"
-echo ""
-echo "This means:"
-echo "  - Runs at minute 0 of every hour (1:00, 2:00, 3:00, etc.)"
-echo "  - Updates all active weather stations"
-echo "  - Logs output to: $LOG_DIR/update_weather.log"
-echo ""
-echo "======================================================================"
+echo "Project directory: $PROJECT_DIR"
+echo "Backend directory: $SCRIPT_DIR"
+echo "Virtual environment: $VENV_PATH"
 echo ""
 
-# Check if cron job already exists
-if crontab -l 2>/dev/null | grep -q "update_weather_data"; then
-    echo "⚠️  Cron job already exists!"
-    echo ""
-    echo "Current crontab:"
-    crontab -l | grep "update_weather_data"
-    echo ""
-    read -p "Do you want to replace it? (yes/no): " REPLACE
-    
-    if [ "$REPLACE" != "yes" ]; then
-        echo "Setup cancelled."
-        exit 0
-    fi
-    
-    # Remove existing cron job
-    crontab -l | grep -v "update_weather_data" | crontab -
-    echo "Removed existing cron job."
+# Check if virtual environment exists
+if [ ! -d "$VENV_PATH" ]; then
+    echo -e "${YELLOW}Warning: Virtual environment not found at $VENV_PATH${NC}"
+    echo "Please create a virtual environment first."
+    exit 1
 fi
 
-# Add new cron job
-(crontab -l 2>/dev/null; echo "$CRON_COMMAND") | crontab -
+# Check if manage.py exists
+if [ ! -f "$MANAGE_PY" ]; then
+    echo -e "${YELLOW}Warning: manage.py not found at $MANAGE_PY${NC}"
+    exit 1
+fi
 
+echo -e "${GREEN}✓ Project structure verified${NC}"
 echo ""
-echo "✓ Cron job added successfully!"
+
+# Generate the cron command
+CRON_COMMAND="0 2 * * * cd $SCRIPT_DIR && source $VENV_PATH/bin/activate && python $MANAGE_PY update_weather_data >> $PROJECT_DIR/logs/cron_update.log 2>&1"
+
+echo "The following cron job will be added:"
+echo "----------------------------------------------------------------------"
+echo "$CRON_COMMAND"
+echo "----------------------------------------------------------------------"
 echo ""
-echo "To verify:"
-echo "  crontab -l"
+echo "This will run daily at 2:00 AM and:"
+echo "  • Update weather data for the last 7 days"
+echo "  • Log output to logs/cron_update.log"
 echo ""
-echo "To view update logs:"
-echo "  tail -f $LOG_DIR/update_weather.log"
+
+# Create logs directory if it doesn't exist
+mkdir -p "$PROJECT_DIR/logs"
+echo -e "${GREEN}✓ Created logs directory${NC}"
 echo ""
-echo "To remove the cron job:"
-echo "  crontab -e"
-echo "  (then delete the line containing 'update_weather_data')"
+
+# Ask for confirmation
+read -p "Do you want to add this cron job? (y/n): " -n 1 -r
 echo ""
-echo "======================================================================"
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    # Backup existing crontab
+    crontab -l > "$PROJECT_DIR/crontab_backup_$(date +%Y%m%d_%H%M%S).txt" 2>/dev/null || true
+    
+    # Add the cron job (check if it already exists first)
+    (crontab -l 2>/dev/null | grep -v "update_weather_data"; echo "$CRON_COMMAND") | crontab -
+    
+    echo ""
+    echo -e "${GREEN}✓ Cron job added successfully!${NC}"
+    echo ""
+    echo "Current crontab:"
+    echo "----------------------------------------------------------------------"
+    crontab -l
+    echo "----------------------------------------------------------------------"
+    echo ""
+    echo "Logs will be written to: $PROJECT_DIR/logs/cron_update.log"
+    echo ""
+    echo "To view logs:"
+    echo "  tail -f $PROJECT_DIR/logs/cron_update.log"
+    echo ""
+    echo "To remove the cron job later:"
+    echo "  crontab -e"
+    echo "  (then delete the line with 'update_weather_data')"
+    echo ""
+else
+    echo ""
+    echo "Cron job NOT added."
+    echo ""
+    echo "To add it manually later, run:"
+    echo "  crontab -e"
+    echo ""
+    echo "And add this line:"
+    echo "  $CRON_COMMAND"
+    echo ""
+fi
+
+echo "========================================================================"
+echo "Manual Update Commands"
+echo "========================================================================"
+echo ""
+echo "To update data manually:"
+echo "  cd $SCRIPT_DIR"
+echo "  source $VENV_PATH/bin/activate"
+echo "  python $MANAGE_PY update_weather_data"
+echo ""
+echo "To backfill all missing data:"
+echo "  python $MANAGE_PY update_weather_data --backfill"
+echo ""
+echo "To import a specific date range:"
+echo "  python $MANAGE_PY import_bcws_data --start-date 2025-11-01 --end-date 2025-11-30"
+echo ""
+echo "========================================================================"

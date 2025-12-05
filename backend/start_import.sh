@@ -1,36 +1,44 @@
 #!/bin/bash
-# Script to run the full BC weather data import in the background
-# This will import data from 2025 only (about 5-6 hours estimated)
 
-cd /Users/davisfranklin/BCFireWeatherDashboard/backend
+# BC Fire Weather Dashboard - Daily Update Script
+# Run this manually to update yesterday's data
+# Or use setup_cron.sh to schedule it automatically
 
-echo "======================================================================"
-echo "BC Fire Weather Dashboard - Background Data Import"
-echo "======================================================================"
-echo "Start time: $(date)"
-echo "Importing 2025 data for all 167 BC stations (~320 MB)"
-echo "This process will run in the background and take 5-6 hours"
-echo ""
-echo "To monitor progress:"
-echo "  tail -f import_log.txt"
-echo ""
-echo "To check if it's still running:"
-echo "  ps aux | grep import_all_stations"
-echo ""
-echo "======================================================================"
+set -e
+
+# Get the absolute path to the backend directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+VENV_PATH="$PROJECT_DIR/.venv"
+
+# Colors
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo "========================================================================"
+echo "BC Fire Weather Dashboard - Manual Data Update"
+echo "========================================================================"
 echo ""
 
-# Run the import in the background with logging
-nohup .venv/bin/python manage.py import_all_stations \
-    --skip-existing \
-    > import_log.txt 2>&1 &
+# Check virtual environment
+if [ ! -d "$VENV_PATH" ]; then
+    echo -e "${YELLOW}Error: Virtual environment not found at $VENV_PATH${NC}"
+    exit 1
+fi
 
-IMPORT_PID=$!
+# Activate virtual environment and run update
+cd "$SCRIPT_DIR"
+source "$VENV_PATH/bin/activate"
 
-echo "Import started with PID: $IMPORT_PID"
-echo "Log file: import_log.txt"
+echo "Running data update..."
 echo ""
-echo "To stop the import:"
-echo "  kill $IMPORT_PID"
+
+python manage.py update_weather_data
+
 echo ""
-echo "======================================================================"
+echo -e "${GREEN}✓ Update complete!${NC}"
+echo ""
+echo "To view database stats:"
+echo "  python manage.py shell -c \"from weather.models import *; print(f'Stations: {WeatherStation.objects.count()}, Observations: {HourlyObservation.objects.count()}')\""
+echo ""
